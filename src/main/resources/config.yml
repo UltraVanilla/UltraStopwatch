@@ -1,0 +1,19 @@
+# UltraStopwatch Configuration
+
+# Enable debug messages
+debug: false
+
+# Maximum entries shown on leaderboards
+leaderboard-size: 10
+
+# Points table for points-based event scoring
+# Index 0 = 1st place, index 1 = 2nd place, etc.
+points-table:
+  - 10
+  - 8
+  - 6
+  - 5
+  - 4
+  - 3
+  - 2
+  - 1

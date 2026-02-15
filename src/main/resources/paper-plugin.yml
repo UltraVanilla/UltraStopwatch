@@ -1,0 +1,21 @@
+name: ${project.name}
+version: ${project.version}
+main: world.ultravanilla.ultrastopwatch.UltraStopwatch
+description: ${project.description}
+api-version: '1.21'
+author: Jamie
+website: ${project.url}
+
+dependencies:
+  server:
+    CommandAPI:
+      load: BEFORE
+      required: true
+
+permissions:
+  ultrastopwatch.use:
+    description: Allows use of stopwatch and timer commands
+    default: true
+  ultrastopwatch.admin:
+    description: Allows creating and managing tracks and events
+    default: op
