@@ -118,6 +118,10 @@ public class TimerManager {
     }
 
     public long stop(Player player) {
+        return stop(player, false);
+    }
+
+    public long stop(Player player, boolean saveRecord) {
         long startNanos = runningTimers.removeLong(player.getUniqueId());
         pendingTimers.remove(player.getUniqueId());
         PlayerTimer timer = timerDetails.remove(player.getUniqueId());
@@ -139,7 +143,7 @@ public class TimerManager {
                 .append(Component.text(formatted, NamedTextColor.GOLD)));
 
         // Record to track leaderboard if this is a track run
-        if (timer.type() == PlayerTimer.TimerType.TRACK && timer.trackName() != null) {
+        if (saveRecord && timer.type() == PlayerTimer.TimerType.TRACK && timer.trackName() != null) {
             var track = dataStore.getTrack(timer.trackName());
             if (track != null) {
                 TrackRecord record = new TrackRecord(player.getUniqueId(), player.getName(), elapsed);

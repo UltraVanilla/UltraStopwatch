@@ -99,7 +99,6 @@ public class DataStore {
                 }
             } catch (InterruptedException e) {
                 ioExecutor.shutdownNow();
-                Thread.currentThread().interrupt(); // Re-set the status for the server
             }
 
         if (!loaded) {

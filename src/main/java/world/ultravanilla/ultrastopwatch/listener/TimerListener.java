@@ -159,7 +159,7 @@ public class TimerListener implements Listener {
                 return;
             }
 
-            timerManager.stop(player);
+            timerManager.stop(player, true);
         }
     }
 
