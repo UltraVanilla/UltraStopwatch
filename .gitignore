@@ -36,3 +36,5 @@ run/
 *.tar.gz
 *.tar.bz2
 *.tar
+
+.metals/

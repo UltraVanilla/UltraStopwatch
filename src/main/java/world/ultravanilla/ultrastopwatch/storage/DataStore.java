@@ -92,20 +92,19 @@ public class DataStore {
     // lowk scared ive missed something here T.T
     public void saveAll() {
         ioExecutor.shutdown();
-        boolean interrupted = false;
-        try {
-            if (!ioExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
-                logger.warning("DataStore save tasks timed out. Forcing shutdown to ensure final save.");
+            try {
+                // 2. Wait a moment for active background tasks to finish
+                if (!ioExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    ioExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
                 ioExecutor.shutdownNow();
+                Thread.currentThread().interrupt(); // Re-set the status for the server
             }
-        } catch (InterruptedException e) {
-            ioExecutor.shutdownNow();
-            interrupted = true;
-        }
 
         if (!loaded) {
             logger.warning("DataStore was not fully loaded. Skipping save to prevent data loss.");
-            if (interrupted) Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt();
             return;
         }
 
@@ -124,30 +123,18 @@ public class DataStore {
             }
         }
         saveFileSync(eventsFile, gson.toJson(events));
-        if (interrupted) Thread.currentThread().interrupt();
     }
 
     // --- Atomic write helpers ---
 
     private void saveFileSync(Path target, String json) {
-        // abort immediately to avoid overwriting the main thread's final save.
-        if (Thread.currentThread().isInterrupted()) return;
-
-        // Use tmp file to avoid conflicts with concurrent async saves
         Path tmpFile = target.resolveSibling(target.getFileName().toString() + "." + UUID.randomUUID() + ".tmp");
         try {
             Files.writeString(tmpFile, json, StandardCharsets.UTF_8);
-            try {
-                Files.move(tmpFile, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
-                Files.move(tmpFile, target, StandardCopyOption.REPLACE_EXISTING);
-            }
+            Files.move(tmpFile, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
             logger.severe("Failed to save " + target.getFileName() + ": " + e.getMessage());
-            // Clean up tmp on failure
-            try {
-                Files.deleteIfExists(tmpFile);
-            } catch (IOException ignored) {}
+            try { Files.deleteIfExists(tmpFile); } catch (IOException ignored) {}
         }
     }
 
