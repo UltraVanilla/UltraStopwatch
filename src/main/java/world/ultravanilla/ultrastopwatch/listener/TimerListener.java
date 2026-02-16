@@ -28,6 +28,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityInteractEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -172,6 +173,11 @@ public class TimerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         timerManager.removeTimer(event.getPlayer().getUniqueId());
         dataStore.unloadPlayerRecords(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        timerManager.removeTimer(event.getEntity().getUniqueId());
     }
 
     private boolean hasPositionChanged(Location from, Location to) {
