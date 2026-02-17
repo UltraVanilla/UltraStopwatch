@@ -31,6 +31,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import world.ultravanilla.ultrastopwatch.model.Track;
 import world.ultravanilla.ultrastopwatch.model.TrackRecord;
 import world.ultravanilla.ultrastopwatch.storage.DataStore;
 
@@ -170,9 +171,12 @@ public class TimerManager {
             String extra = (bestTime == -1) ? " (First Run!)" : " (New Personal Best!)";
             player.sendMessage(message.append(Component.text(extra, NamedTextColor.LIGHT_PURPLE)));
 
-            player.sendMessage(Component.text("Click here to submit to leaderboard", NamedTextColor.GREEN, TextDecoration.BOLD)
-                    .clickEvent(ClickEvent.runCommand("/track submit"))
-                    .hoverEvent(HoverEvent.showText(Component.text("Submit " + formattedTime))));
+            Track track = dataStore.getTrack(trackName);
+            if (track != null && track.isLeaderboardEnabled()) {
+                player.sendMessage(Component.text("Click here to submit to leaderboard", NamedTextColor.GREEN, TextDecoration.BOLD)
+                        .clickEvent(ClickEvent.runCommand("/track submit"))
+                        .hoverEvent(HoverEvent.showText(Component.text("Submit " + formattedTime))));
+            }
         } else {
             String pbStr = TrackRecord.formatTime(bestTime);
             player.sendMessage(message.append(Component.text(" (PB: " + pbStr + ")", NamedTextColor.YELLOW)));
@@ -185,6 +189,13 @@ public class TimerManager {
             player.sendMessage(Component.text("No pending run to submit.", NamedTextColor.RED));
             return;
         }
+
+        Track track = dataStore.getTrack(run.trackName());
+        if (track != null && !track.isLeaderboardEnabled()) {
+            player.sendMessage(Component.text("Leaderboard for track '" + run.trackName() + "' is disabled.", NamedTextColor.RED));
+            return;
+        }
+
         TrackRecord record = new TrackRecord(player.getUniqueId(), player.getName(), run.timeMs());
         dataStore.addRecord(run.trackName(), record);
         player.sendMessage(Component.text("Run submitted!", NamedTextColor.GREEN));

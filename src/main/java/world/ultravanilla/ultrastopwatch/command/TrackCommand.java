@@ -205,6 +205,25 @@ public class TrackCommand {
                                     player.sendMessage(Component.text("Leaderboard for track '" + name + "' " + status + ".", enabled ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
                                 })
                 )
+                // /track toggleleaderboard <name>
+                .withSubcommand(
+                        new CommandAPICommand("toggleleaderboard")
+                                .withPermission("ultrastopwatch.admin")
+                                .withArguments(trackNameArgument())
+                                .executesPlayer((player, args) -> {
+                                    String name = (String) args.get("name");
+                                    Track track = dataStore.getTrack(name);
+                                    if (track == null) {
+                                        player.sendMessage(Component.text("Track '" + name + "' not found.", NamedTextColor.RED));
+                                        return;
+                                    }
+                                    boolean newState = !track.isLeaderboardEnabled();
+                                    track.setLeaderboardEnabled(newState);
+                                    dataStore.saveTracks();
+                                    String status = newState ? "enabled" : "disabled";
+                                    player.sendMessage(Component.text("Leaderboard for track '" + name + "' is now " + status + ".", newState ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
+                                })
+                )
                 // /track list
                 .withSubcommand(
                         new CommandAPICommand("list")
@@ -326,24 +345,10 @@ public class TrackCommand {
                                     timerManager.submitRun(player);
                                 })
                 )
-                // /track submit
-                .withSubcommand(
-                        new CommandAPICommand("submit")
-                                .executesPlayer((player, args) -> {
-                                    timerManager.submitRun(player);
-                                })
-                )
-                // /track submit
-                .withSubcommand(
-                        new CommandAPICommand("submit")
-                                .executesPlayer((player, args) -> {
-                                    timerManager.submitRun(player);
-                                })
-                )
                 // /track event subcommands
                 .withSubcommand(buildEventSubcommands())
                 .executes((sender, args) -> {
-                    sender.sendMessage(Component.text("Usage: /track <create|delete|setstart|setend|settrigger|setdelay|setleaderboard|resetleaderboard|list|info|leaderboard|run|submit|event>", NamedTextColor.YELLOW));
+                    sender.sendMessage(Component.text("Usage: /track <create|delete|setstart|setend|settrigger|setdelay|setleaderboard|toggleleaderboard|resetleaderboard|list|info|leaderboard|run|submit|event>", NamedTextColor.YELLOW));
                 })
                 .register();
     }
