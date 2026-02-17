@@ -113,7 +113,9 @@ public class DataStore {
             List<TrackRecord> trackRecords = entry.getValue();
             if (trackRecords != null && !trackRecords.isEmpty()) {
                 Path file = recordsDir.resolve(entry.getKey().toLowerCase() + ".json");
-                saveFileSync(file, gson.toJson(trackRecords));
+                synchronized (trackRecords) {
+                    saveFileSync(file, gson.toJson(trackRecords));
+                }
             }
         }
         for (Map.Entry<UUID, Map<String, List<Long>>> entry : playerRecords.entrySet()) {
