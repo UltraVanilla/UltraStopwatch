@@ -58,7 +58,11 @@ public class StopwatchCommand {
                     })
             )
             .executesPlayer((player, args) -> {
-                timerManager.check(player);
+                if (timerManager.hasTimer(player.getUniqueId())) {
+                    timerManager.stop(player);
+                } else {
+                    timerManager.startManual(player);
+                }
             })
             .register();
     }
