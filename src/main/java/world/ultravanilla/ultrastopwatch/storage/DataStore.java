@@ -99,6 +99,7 @@ public class DataStore {
                 }
             } catch (InterruptedException e) {
                 ioExecutor.shutdownNow();
+                Thread.currentThread().interrupt(); // Re-set the status for the server
             }
 
         if (!loaded) {
@@ -250,6 +251,18 @@ public class DataStore {
             }
         }
         return list;
+    }
+
+    public long getPlayerBestTime(UUID uuid, String trackName) {
+        Map<String, List<Long>> pRecords = playerRecords.get(uuid);
+        if (pRecords == null) return -1;
+
+        List<Long> times = pRecords.get(trackName.toLowerCase());
+        if (times == null || times.isEmpty()) return -1;
+
+        synchronized (times) {
+            return times.get(0);
+        }
     }
 
     // --- Player Records ---

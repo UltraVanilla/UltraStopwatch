@@ -299,10 +299,31 @@ public class TrackCommand {
                                     timerManager.startTrackRun(player, name.toLowerCase());
                                 })
                 )
+                // /track submit
+                .withSubcommand(
+                        new CommandAPICommand("submit")
+                                .executesPlayer((player, args) -> {
+                                    timerManager.submitRun(player);
+                                })
+                )
+                // /track submit
+                .withSubcommand(
+                        new CommandAPICommand("submit")
+                                .executesPlayer((player, args) -> {
+                                    timerManager.submitRun(player);
+                                })
+                )
+                // /track submit
+                .withSubcommand(
+                        new CommandAPICommand("submit")
+                                .executesPlayer((player, args) -> {
+                                    timerManager.submitRun(player);
+                                })
+                )
                 // /track event subcommands
                 .withSubcommand(buildEventSubcommands())
                 .executes((sender, args) -> {
-                    sender.sendMessage(Component.text("Usage: /track <create|delete|setstart|setend|settrigger|setdelay|setleaderboard|resetleaderboard|list|info|leaderboard|run|event>", NamedTextColor.YELLOW));
+                    sender.sendMessage(Component.text("Usage: /track <create|delete|setstart|setend|settrigger|setdelay|setleaderboard|resetleaderboard|list|info|leaderboard|run|submit|event>", NamedTextColor.YELLOW));
                 })
                 .register();
     }

@@ -22,6 +22,9 @@ import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -41,6 +44,9 @@ public class TimerManager {
     // Hot path
     private final Object2LongOpenHashMap<UUID> runningTimers = new Object2LongOpenHashMap<>(); // uuid -> startNanos
     private final ObjectOpenHashSet<UUID> pendingTimers = new ObjectOpenHashSet<>(); // players waiting to move
+
+    private record PendingRun(String trackName, long timeMs) {}
+    private final Map<UUID, PendingRun> pendingSubmissions = new HashMap<>();
 
     // Cold path
     private final Map<UUID, PlayerTimer> timerDetails = new HashMap<>();
@@ -139,22 +145,49 @@ public class TimerManager {
         String formatted = TrackRecord.formatTime(elapsed);
 
         player.sendActionBar(Component.text(formatted, NamedTextColor.GOLD));
-        player.sendMessage(Component.text("Time: ", NamedTextColor.GRAY)
-                .append(Component.text(formatted, NamedTextColor.GOLD)));
 
-        // Record to track leaderboard if this is a track run
+        // Handle track completion or standard message
         if (saveRecord && timer.type() == PlayerTimer.TimerType.TRACK && timer.trackName() != null) {
-            var track = dataStore.getTrack(timer.trackName());
-            if (track != null) {
-                TrackRecord record = new TrackRecord(player.getUniqueId(), player.getName(), elapsed);
-                if (dataStore.addRecord(timer.trackName(), record)) {
-                    player.sendMessage(Component.text("New personal best!", NamedTextColor.GREEN));
-                }
-            }
+            handleTrackFinish(player, timer.trackName(), elapsed, formatted);
+        } else {
+            player.sendMessage(Component.text("Time: ", NamedTextColor.GRAY)
+                    .append(Component.text(formatted, NamedTextColor.GOLD)));
         }
 
         cleanupActionBarTask();
         return elapsed;
+    }
+
+    private void handleTrackFinish(Player player, String trackName, long elapsed, String formattedTime) {
+        // Always cache the latest run so it overwrites any previous pending run
+        pendingSubmissions.put(player.getUniqueId(), new PendingRun(trackName, elapsed));
+
+        long bestTime = dataStore.getPlayerBestTime(player.getUniqueId(), trackName);
+        Component message = Component.text("Time: ", NamedTextColor.GRAY)
+                .append(Component.text(formattedTime, NamedTextColor.GOLD));
+
+        if (bestTime == -1 || elapsed < bestTime) {
+            String extra = (bestTime == -1) ? " (First Run!)" : " (New Personal Best!)";
+            player.sendMessage(message.append(Component.text(extra, NamedTextColor.LIGHT_PURPLE)));
+
+            player.sendMessage(Component.text("Click here to submit to leaderboard", NamedTextColor.GREEN, TextDecoration.BOLD)
+                    .clickEvent(ClickEvent.runCommand("/track submit"))
+                    .hoverEvent(HoverEvent.showText(Component.text("Submit " + formattedTime))));
+        } else {
+            String pbStr = TrackRecord.formatTime(bestTime);
+            player.sendMessage(message.append(Component.text(" (PB: " + pbStr + ")", NamedTextColor.YELLOW)));
+        }
+    }
+
+    public void submitRun(Player player) {
+        PendingRun run = pendingSubmissions.remove(player.getUniqueId());
+        if (run == null) {
+            player.sendMessage(Component.text("No pending run to submit.", NamedTextColor.RED));
+            return;
+        }
+        TrackRecord record = new TrackRecord(player.getUniqueId(), player.getName(), run.timeMs());
+        dataStore.addRecord(run.trackName(), record);
+        player.sendMessage(Component.text("Run submitted!", NamedTextColor.GREEN));
     }
 
     public void reset(Player player) {
@@ -216,6 +249,7 @@ public class TimerManager {
         runningTimers.removeLong(playerUUID);
         pendingTimers.remove(playerUUID);
         timerDetails.remove(playerUUID);
+        pendingSubmissions.remove(playerUUID);
         cleanupActionBarTask();
     }
 
