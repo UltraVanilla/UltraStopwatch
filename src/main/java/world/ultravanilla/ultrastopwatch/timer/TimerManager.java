@@ -130,7 +130,7 @@ public class TimerManager {
 
     public long stop(Player player, boolean saveRecord) {
         long startNanos = runningTimers.removeLong(player.getUniqueId());
-        pendingTimers.remove(player.getUniqueId());
+        boolean wasPending = pendingTimers.remove(player.getUniqueId());
         PlayerTimer timer = timerDetails.remove(player.getUniqueId());
 
         if (timer == null) {
@@ -138,7 +138,11 @@ public class TimerManager {
             return -1;
         }
         if (startNanos == Long.MIN_VALUE) {
-            player.sendMessage(Component.text("Timer was never started.", NamedTextColor.RED));
+            if (wasPending) {
+                player.sendMessage(Component.text("Pending timer cancelled.", NamedTextColor.YELLOW));
+            } else {
+                player.sendMessage(Component.text("Timer was never started.", NamedTextColor.RED));
+            }
             return -1;
         }
 
