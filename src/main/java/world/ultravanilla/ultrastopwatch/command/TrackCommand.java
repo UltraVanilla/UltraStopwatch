@@ -539,16 +539,15 @@ public class TrackCommand {
         sender.sendMessage(Component.text("Calculating leaderboard...", NamedTextColor.GRAY));
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             List<TrackRecord> records = dataStore.getRecords(trackName);
-            if (records.isEmpty()) {
-                plugin.getServer().getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(Component.text("No records for track '" + trackName + "'.", NamedTextColor.GRAY))
-                );
-                return;
-            }
-
             // Get best time per player, sorted
             Map<UUID, TrackRecord> bestPerPlayer = new LinkedHashMap<>();
             synchronized (records) {
+                if (records.isEmpty()) {
+                    plugin.getServer().getScheduler().runTask(plugin, () ->
+                        sender.sendMessage(Component.text("No records for track '" + trackName + "'.", NamedTextColor.GRAY))
+                    );
+                    return;
+                }
                 for (TrackRecord record : records) {
                     bestPerPlayer.merge(record.getPlayerUUID(), record, (a, b) -> a.getTimeMs() <= b.getTimeMs() ? a : b);
                 }
