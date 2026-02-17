@@ -396,6 +396,58 @@ public class DataStore {
         });
     }
 
+    public boolean deletePlayerRecord(String trackName, String playerName) {
+        List<TrackRecord> trackRecords = records.get(trackName.toLowerCase());
+        if (trackRecords == null) return false;
+
+        UUID uuidToRemove = null;
+        boolean removed = false;
+
+        synchronized (trackRecords) {
+            Iterator<TrackRecord> it = trackRecords.iterator();
+            while (it.hasNext()) {
+                TrackRecord record = it.next();
+                if (record.getPlayerName().equalsIgnoreCase(playerName)) {
+                    uuidToRemove = record.getPlayerUUID();
+                    it.remove();
+                    removed = true;
+                }
+            }
+        }
+
+        if (removed) {
+            saveRecordsForTrack(trackName);
+
+            if (uuidToRemove != null) {
+                final UUID targetUUID = uuidToRemove;
+                Map<String, List<Long>> pRecords = playerRecords.get(targetUUID);
+
+                if (pRecords != null) {
+                    if (pRecords.remove(trackName.toLowerCase()) != null) {
+                        savePlayerRecords(targetUUID);
+                    }
+                } else {
+                    ioExecutor.submit(() -> {
+                        Path file = playerRecordsDir.resolve(targetUUID.toString() + ".json");
+                        if (Files.exists(file)) {
+                            try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+                                Type type = new TypeToken<Map<String, List<Long>>>() {}.getType();
+                                Map<String, List<Long>> loaded = gson.fromJson(reader, type);
+                                if (loaded != null && loaded.remove(trackName.toLowerCase()) != null) {
+                                    String json = gson.toJson(loaded);
+                                    saveFileSync(file, json);
+                                }
+                            } catch (IOException e) {
+                                logger.warning("Failed to delete player record from disk for " + targetUUID + ": " + e.getMessage());
+                            }
+                        }
+                    });
+                }
+            }
+        }
+        return removed;
+    }
+
     // --- Events ---
 
     private boolean loadEvents() {

@@ -281,6 +281,26 @@ public class TrackCommand {
                                     player.sendMessage(Component.text("Leaderboard for track '" + name + "' has been reset.", NamedTextColor.YELLOW));
                                 })
                 )
+                // /track deleteplayer <name> <player>
+                .withSubcommand(
+                        new CommandAPICommand("deleteplayer")
+                                .withPermission("ultrastopwatch.admin")
+                                .withArguments(trackNameArgument())
+                                .withArguments(new StringArgument("player"))
+                                .executesPlayer((player, args) -> {
+                                    String trackName = (String) args.get("name");
+                                    String playerName = (String) args.get("player");
+                                    if (dataStore.getTrack(trackName) == null) {
+                                        player.sendMessage(Component.text("Track '" + trackName + "' not found.", NamedTextColor.RED));
+                                        return;
+                                    }
+                                    if (dataStore.deletePlayerRecord(trackName, playerName)) {
+                                        player.sendMessage(Component.text("Removed " + playerName + " from track '" + trackName + "' leaderboard.", NamedTextColor.GREEN));
+                                    } else {
+                                        player.sendMessage(Component.text("Player '" + playerName + "' not found on leaderboard for track '" + trackName + "'.", NamedTextColor.RED));
+                                    }
+                                })
+                )
                 // /track run <name>
                 .withSubcommand(
                         new CommandAPICommand("run")
