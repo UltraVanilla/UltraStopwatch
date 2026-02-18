@@ -50,6 +50,11 @@ A stopwatch and racing plugin used on UltraVanilla.
 *   `/track event start <trackname>` - Start an event (enables leaderboards for all included tracks).
 *   `/track event stop <trackname>` - Stop an event.
 
+## Permissions
+
+*   `ultrastopwatch.use` - Allows access to basic stopwatch, casual run, and track participation commands.
+*   `ultrastopwatch.admin` - Allows access to track creation, configuration, and event management commands.
+
 ## License
 
 Copyright (C) 2026 cutelilreno <https://github.com/cutelilreno>
