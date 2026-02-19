@@ -162,7 +162,7 @@ public class TimerListener implements Listener {
 
             // Check for laps
             if (track.getLaps() > 1) {
-                if (!timerManager.lap(player, track.getLaps())) {
+                if (!timerManager.lap(player, track.getLaps(), track.getTriggerDelay())) {
                     return;
                 }
             }

@@ -136,19 +136,23 @@ public class TimerManager {
         ensureActionBarTask();
     }
 
-    public boolean lap(Player player, int totalLaps) {
+    public boolean lap(Player player, int totalLaps, long delayMs) {
         UUID uuid = player.getUniqueId();
         if (!lapsRemaining.containsKey(uuid)) {
             lapsRemaining.put(uuid, totalLaps);
             lastLapNanos.put(uuid, runningTimers.getLong(uuid));
         }
 
-        int remaining = lapsRemaining.getInt(uuid);
-
         long now = System.nanoTime();
         long last = lastLapNanos.getLong(uuid);
         long split = (now - last) / 1_000_000;
+
+        if (split < delayMs) {
+            return false;
+        }
+
         lastLapNanos.put(uuid, now);
+        int remaining = lapsRemaining.getInt(uuid);
 
         int currentLap = totalLaps - remaining + 1;
         String splitStr = TrackRecord.formatTime(split);
