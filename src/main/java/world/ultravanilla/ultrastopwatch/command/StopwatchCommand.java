@@ -19,6 +19,8 @@
 package world.ultravanilla.ultrastopwatch.command;
 
 import dev.jorel.commandapi.CommandAPICommand;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import world.ultravanilla.ultrastopwatch.timer.TimerManager;
 
 public class StopwatchCommand {
@@ -30,8 +32,17 @@ public class StopwatchCommand {
     }
 
     public void register() {
-        new CommandAPICommand("stopwatch")
-            .withAliases("sw", "timer")
+
+        // /sw
+        new CommandAPICommand("sw")
+            .withPermission("ultrastopwatch.use")
+            .executesPlayer((player, args) -> {
+                timerManager.toggle(player);
+            })
+            .register();
+
+        // /sw <start|stop|reset|check>    
+        new CommandAPICommand("sw")
             .withPermission("ultrastopwatch.use")
             .withSubcommand(
                 new CommandAPICommand("start")
@@ -57,13 +68,6 @@ public class StopwatchCommand {
                         timerManager.check(player);
                     })
             )
-            .executesPlayer((player, args) -> {
-                if (timerManager.hasTimer(player.getUniqueId())) {
-                    timerManager.stop(player);
-                } else {
-                    timerManager.startManual(player);
-                }
-            })
             .register();
     }
 }

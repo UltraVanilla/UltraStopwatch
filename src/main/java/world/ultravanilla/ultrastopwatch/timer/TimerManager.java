@@ -168,22 +168,26 @@ public class TimerManager {
         pendingSubmissions.put(player.getUniqueId(), new PendingRun(trackName, elapsed));
 
         long bestTime = dataStore.getPlayerBestTime(player.getUniqueId(), trackName);
+        long leaderboardTime = dataStore.getPlayerLeaderboardTime(player.getUniqueId(), trackName);
+
         Component message = Component.text("Time: ", NamedTextColor.GRAY)
                 .append(Component.text(formattedTime, NamedTextColor.GOLD));
 
         if (bestTime == -1 || elapsed < bestTime) {
             String extra = (bestTime == -1) ? " (First Run!)" : " (New Personal Best!)";
             player.sendMessage(message.append(Component.text(extra, NamedTextColor.LIGHT_PURPLE)));
+        } else {
+            String pbStr = TrackRecord.formatTime(bestTime);
+            player.sendMessage(message.append(Component.text(" (PB: " + pbStr + ")", NamedTextColor.YELLOW)));
+        }
 
-            Track track = dataStore.getTrack(trackName);
-            if (track != null && track.isLeaderboardEnabled()) {
+        Track track = dataStore.getTrack(trackName);
+        if (track != null && track.isLeaderboardEnabled()) {
+            if (leaderboardTime == -1 || elapsed < leaderboardTime) {
                 player.sendMessage(Component.text("Click here to submit to leaderboard", NamedTextColor.GREEN, TextDecoration.BOLD)
                         .clickEvent(ClickEvent.runCommand("/track submit"))
                         .hoverEvent(HoverEvent.showText(Component.text("Submit " + formattedTime))));
             }
-        } else {
-            String pbStr = TrackRecord.formatTime(bestTime);
-            player.sendMessage(message.append(Component.text(" (PB: " + pbStr + ")", NamedTextColor.YELLOW)));
         }
     }
 
@@ -236,6 +240,14 @@ public class TimerManager {
         String formatted = TrackRecord.formatTime(elapsed);
         player.sendMessage(Component.text("Elapsed: ", NamedTextColor.GRAY)
                 .append(Component.text(formatted, NamedTextColor.GOLD)));
+    }
+
+    public void toggle(Player player) {
+        if (hasTimer(player.getUniqueId())) {
+            stop(player);
+        } else {
+            startManual(player);
+        }
     }
 
     // --- Hot-path queries used by listeners ---

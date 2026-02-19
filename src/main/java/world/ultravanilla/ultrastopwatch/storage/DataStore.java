@@ -267,6 +267,18 @@ public class DataStore {
         }
     }
 
+    public long getPlayerLeaderboardTime(UUID uuid, String trackName) {
+        List<TrackRecord> trackRecords = getRecords(trackName);
+        synchronized (trackRecords) {
+            for (TrackRecord r : trackRecords) {
+                if (r.getPlayerUUID().equals(uuid)) {
+                    return r.getTimeMs();
+                }
+            }
+        }
+        return -1;
+    }
+
     // --- Player Records ---
 
     public void loadPlayerRecords(UUID uuid) {
@@ -402,7 +414,6 @@ public class DataStore {
         List<TrackRecord> trackRecords = records.get(trackName.toLowerCase());
         if (trackRecords == null) return false;
 
-        UUID uuidToRemove = null;
         boolean removed = false;
 
         synchronized (trackRecords) {
@@ -410,7 +421,6 @@ public class DataStore {
             while (it.hasNext()) {
                 TrackRecord record = it.next();
                 if (record.getPlayerName().equalsIgnoreCase(playerName)) {
-                    uuidToRemove = record.getPlayerUUID();
                     it.remove();
                     removed = true;
                 }
@@ -419,33 +429,6 @@ public class DataStore {
 
         if (removed) {
             saveRecordsForTrack(trackName);
-
-            if (uuidToRemove != null) {
-                final UUID targetUUID = uuidToRemove;
-                Map<String, List<Long>> pRecords = playerRecords.get(targetUUID);
-
-                if (pRecords != null) {
-                    if (pRecords.remove(trackName.toLowerCase()) != null) {
-                        savePlayerRecords(targetUUID);
-                    }
-                } else {
-                    ioExecutor.submit(() -> {
-                        Path file = playerRecordsDir.resolve(targetUUID.toString() + ".json");
-                        if (Files.exists(file)) {
-                            try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-                                Type type = new TypeToken<Map<String, List<Long>>>() {}.getType();
-                                Map<String, List<Long>> loaded = gson.fromJson(reader, type);
-                                if (loaded != null && loaded.remove(trackName.toLowerCase()) != null) {
-                                    String json = gson.toJson(loaded);
-                                    saveFileSync(file, json);
-                                }
-                            } catch (IOException e) {
-                                logger.warning("Failed to delete player record from disk for " + targetUUID + ": " + e.getMessage());
-                            }
-                        }
-                    });
-                }
-            }
         }
         return removed;
     }

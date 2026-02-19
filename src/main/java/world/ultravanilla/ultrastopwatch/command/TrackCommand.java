@@ -497,6 +497,23 @@ public class TrackCommand {
                                     sender.sendMessage(Component.text("Event '" + name + "' has been stopped. Track leaderboards disabled.", NamedTextColor.YELLOW));
                                 })
                 )
+                // /track event info <name>
+                .withSubcommand(
+                        new CommandAPICommand("info")
+                                .withArguments(eventNameArgument())
+                                .executes((sender, args) -> {
+                                    String name = (String) args.get("name");
+                                    RaceEvent event = dataStore.getEvent(name);
+                                    if (event == null) {
+                                        sender.sendMessage(Component.text("Event '" + name + "' not found.", NamedTextColor.RED));
+                                        return;
+                                    }
+                                    sender.sendMessage(Component.text("=== Event: " + event.getName() + " ===", NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+                                    sender.sendMessage(Component.text("  Status: ", NamedTextColor.GRAY).append(Component.text(event.isActive() ? "Active" : "Inactive", event.isActive() ? NamedTextColor.GREEN : NamedTextColor.RED)));
+                                    sender.sendMessage(Component.text("  Scoring: ", NamedTextColor.GRAY).append(Component.text(event.getScoringType().name(), NamedTextColor.WHITE)));
+                                    sender.sendMessage(Component.text("  Tracks: ", NamedTextColor.GRAY).append(Component.text(String.join(", ", event.getTrackNames()), NamedTextColor.WHITE)));
+                                })
+                )
                 // /track event list
                 .withSubcommand(
                         new CommandAPICommand("list")
@@ -531,7 +548,7 @@ public class TrackCommand {
                                 })
                 )
                 .executes((sender, args) -> {
-                    sender.sendMessage(Component.text("Usage: /track event <create|delete|addtrack|removetrack|start|stop|list|leaderboard>", NamedTextColor.YELLOW));
+                    sender.sendMessage(Component.text("Usage: /track event <create|delete|addtrack|removetrack|start|stop|list|info|leaderboard>", NamedTextColor.YELLOW));
                 });
     }
 

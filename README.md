@@ -35,20 +35,20 @@ A stopwatch and racing plugin used on UltraVanilla.
 *   `/track setend <trackname>` - Set the end points (requires 2 points for a line).
 *   `/track settrigger <trackname> <type>` - Set trigger type (`pressure_plate` or `tripwire`).
 *   `/track setdelay <trackname> <seconds>` - Set a delay before the finish line is active.
-*   `/track setleaderboard <trackname> <enabled|disabled>` - Enable or disable the leaderboard.
+*   `/track setleaderboard <trackname> <true|false>` - Enable or disable the leaderboard.
 *   `/track toggleleaderboard <trackname>` - Toggle the leaderboard status (enabled/disabled).
 *   `/track resetleaderboard <trackname>` - Clear the leaderboard for a track.
 *   `/track deleteplayer <trackname> <player>` - Remove a specific player from a track's leaderboard.
 
 ### Events
 *   `/track event list` - List all events.
-*   `/track event leaderboard <trackname>` - View the leaderboard for an event.
-*   `/track event create <trackname> <scoring>` - Create an event (`total_time` or `points`).
-*   `/track event delete <trackname>` - Delete an event.
+*   `/track event leaderboard <event>` - View the leaderboard for an event.
+*   `/track event create <event> <scoring>` - Create an event (`total_time` or `points`).
+*   `/track event delete <event>` - Delete an event.
 *   `/track event addtrack <event> <track>` - Add a track to an event.
 *   `/track event removetrack <event> <track>` - Remove a track from an event.
-*   `/track event start <trackname>` - Start an event (enables leaderboards for all included tracks).
-*   `/track event stop <trackname>` - Stop an event.
+*   `/track event start <event>` - Start an event (enables leaderboards for all included tracks).
+*   `/track event stop <event>` - Stop an event.
 
 ## Permissions
 
