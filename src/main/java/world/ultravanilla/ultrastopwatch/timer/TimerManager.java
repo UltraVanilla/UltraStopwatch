@@ -18,6 +18,7 @@
  */
 package world.ultravanilla.ultrastopwatch.timer;
 
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -44,6 +45,8 @@ public class TimerManager {
 
     // Hot path
     private final Object2LongOpenHashMap<UUID> runningTimers = new Object2LongOpenHashMap<>(); // uuid -> startNanos
+    private final Object2IntOpenHashMap<UUID> lapsRemaining = new Object2IntOpenHashMap<>();
+    private final Object2LongOpenHashMap<UUID> lastLapNanos = new Object2LongOpenHashMap<>();
     private final ObjectOpenHashSet<UUID> pendingTimers = new ObjectOpenHashSet<>(); // players waiting to move
 
     private record PendingRun(String trackName, long timeMs) {}
@@ -117,11 +120,51 @@ public class TimerManager {
         long now = System.nanoTime();
         if (now == Long.MIN_VALUE) now++;
         runningTimers.put(player.getUniqueId(), now);
+
+        if (timer.type() == PlayerTimer.TimerType.TRACK && timer.trackName() != null) {
+            Track track = dataStore.getTrack(timer.trackName());
+            if (track != null && track.getLaps() > 1) {
+                lapsRemaining.put(player.getUniqueId(), track.getLaps());
+                lastLapNanos.put(player.getUniqueId(), now);
+            }
+        }
+
         player.sendActionBar(Component.text("GO!", NamedTextColor.GREEN));
         player.sendMessage(Component.text("Timer started! Run ", NamedTextColor.GREEN)
                 .append(Component.text("/sw reset", NamedTextColor.YELLOW))
                 .append(Component.text(" to cancel.", NamedTextColor.GREEN)));
         ensureActionBarTask();
+    }
+
+    public boolean lap(Player player, int totalLaps) {
+        UUID uuid = player.getUniqueId();
+        if (!lapsRemaining.containsKey(uuid)) {
+            lapsRemaining.put(uuid, totalLaps);
+            lastLapNanos.put(uuid, runningTimers.getLong(uuid));
+        }
+
+        int remaining = lapsRemaining.getInt(uuid);
+
+        long now = System.nanoTime();
+        long last = lastLapNanos.getLong(uuid);
+        long split = (now - last) / 1_000_000;
+        lastLapNanos.put(uuid, now);
+
+        int currentLap = totalLaps - remaining + 1;
+        String splitStr = TrackRecord.formatTime(split);
+
+        player.sendMessage(Component.text("Lap " + currentLap + ": ", NamedTextColor.GRAY)
+                .append(Component.text(splitStr, NamedTextColor.AQUA)));
+
+        if (remaining <= 1) {
+            return true;
+        }
+
+        remaining--;
+        lapsRemaining.put(uuid, remaining);
+        player.sendActionBar(Component.text("Lap " + currentLap + ": " + splitStr, NamedTextColor.AQUA));
+
+        return false;
     }
 
     public long stop(Player player) {
@@ -277,6 +320,8 @@ public class TimerManager {
         pendingTimers.remove(playerUUID);
         timerDetails.remove(playerUUID);
         pendingSubmissions.remove(playerUUID);
+        lapsRemaining.removeInt(playerUUID);
+        lastLapNanos.removeLong(playerUUID);
         cleanupActionBarTask();
     }
 

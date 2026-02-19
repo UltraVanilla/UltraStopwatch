@@ -21,6 +21,7 @@ package world.ultravanilla.ultrastopwatch.command;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
+import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.arguments.LongArgument;
 import dev.jorel.commandapi.arguments.BooleanArgument;
@@ -185,6 +186,25 @@ public class TrackCommand {
                                     player.sendMessage(Component.text("Trigger delay for track '" + name + "' set to " + seconds + "s.", NamedTextColor.GREEN));
                                 })
                 )
+                // /track setlaps <name> <amount>
+                .withSubcommand(
+                        new CommandAPICommand("setlaps")
+                                .withPermission("ultrastopwatch.admin")
+                                .withArguments(trackNameArgument())
+                                .withArguments(new IntegerArgument("amount", 1))
+                                .executesPlayer((player, args) -> {
+                                    String name = (String) args.get("name");
+                                    int laps = (int) args.get("amount");
+                                    Track track = dataStore.getTrack(name);
+                                    if (track == null) {
+                                        player.sendMessage(Component.text("Track '" + name + "' not found.", NamedTextColor.RED));
+                                        return;
+                                    }
+                                    track.setLaps(laps);
+                                    dataStore.saveTracks();
+                                    player.sendMessage(Component.text("Laps for track '" + name + "' set to " + laps + ".", NamedTextColor.GREEN));
+                                })
+                )
                 // /track setleaderboard <name> <enabled>
                 .withSubcommand(
                         new CommandAPICommand("setleaderboard")
@@ -268,6 +288,7 @@ public class TrackCommand {
                                     sender.sendMessage(Component.text("  End: ", NamedTextColor.GRAY).append(Component.text(endStr, NamedTextColor.WHITE)));
                                     sender.sendMessage(Component.text("  Trigger: ", NamedTextColor.GRAY).append(Component.text(track.getTriggerType().name().toLowerCase(), NamedTextColor.WHITE)));
                                     sender.sendMessage(Component.text("  Trigger Delay: ", NamedTextColor.GRAY).append(Component.text((track.getTriggerDelay() / 1000) + "s", NamedTextColor.WHITE)));
+                                    sender.sendMessage(Component.text("  Laps: ", NamedTextColor.GRAY).append(Component.text(track.getLaps(), NamedTextColor.WHITE)));
                                     sender.sendMessage(Component.text("  Leaderboard: ", NamedTextColor.GRAY).append(Component.text(track.isLeaderboardEnabled() ? "Enabled" : "Disabled", track.isLeaderboardEnabled() ? NamedTextColor.GREEN : NamedTextColor.RED)));
                                 })
                 )
@@ -348,7 +369,7 @@ public class TrackCommand {
                 // /track event subcommands
                 .withSubcommand(buildEventSubcommands())
                 .executes((sender, args) -> {
-                    sender.sendMessage(Component.text("Usage: /track <create|delete|setstart|setend|settrigger|setdelay|setleaderboard|toggleleaderboard|resetleaderboard|list|info|leaderboard|run|submit|event>", NamedTextColor.YELLOW));
+                    sender.sendMessage(Component.text("Usage: /track <create|delete|setstart|setend|settrigger|setdelay|setlaps|setleaderboard|toggleleaderboard|resetleaderboard|list|info|leaderboard|run|submit|event>", NamedTextColor.YELLOW));
                 })
                 .register();
     }

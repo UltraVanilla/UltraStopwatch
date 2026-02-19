@@ -13,36 +13,46 @@ A stopwatch and racing plugin used on UltraVanilla.
 
 ## Commands
 
-### Stopwatch
-*   `/stopwatch` (Aliases: `/sw`, `/timer`) - Toggle the stopwatch or view help.
+### User Commands
+
+#### Stopwatch
+*   `/sw` - Toggle the stopwatch or view help.
 *   `/sw start` - Start the manual stopwatch.
 *   `/sw stop` - Stop the manual stopwatch.
 *   `/sw reset` - Reset the manual stopwatch.
 *   `/sw check` - Check the current time of the manual stopwatch.
 
-### Casual Run
+#### Casual Run
 *   `/startrun` (Alias: `/sr`) - Start a casual timer (starts upon movement, stops when you walk over a pressure plate).
 
-### Track Management
+#### Tracks
 *   `/track list` - List all tracks.
-*   `/track info <trackname>` - View details about a track.
-*   `/track leaderboard <trackname>` - View the leaderboard for a track.
-*   `/track run <trackname>` - Start a run on a specific track.
+*   `/track info <track>` - View details about a track.
+*   `/track leaderboard <track>` - View the leaderboard for a track.
+*   `/track run <track>` - Start a run on a specific track.
 *   `/track submit` - Submit your last run time to the leaderboard (if applicable).
-*   `/track create <trackname>` - Create a new track.
-*   `/track delete <trackname>` - Delete a track.
-*   `/track setstart <trackname>` - Set the start points (requires 2 points for a line).
-*   `/track setend <trackname>` - Set the end points (requires 2 points for a line).
-*   `/track settrigger <trackname> <type>` - Set trigger type (`pressure_plate` or `tripwire`).
-*   `/track setdelay <trackname> <seconds>` - Set a delay before the finish line is active.
-*   `/track setleaderboard <trackname> <true|false>` - Enable or disable the leaderboard.
-*   `/track toggleleaderboard <trackname>` - Toggle the leaderboard status (enabled/disabled).
-*   `/track resetleaderboard <trackname>` - Clear the leaderboard for a track.
-*   `/track deleteplayer <trackname> <player>` - Remove a specific player from a track's leaderboard.
 
-### Events
+#### Events
 *   `/track event list` - List all events.
+*   `/track event info <event>` - View details about an event.
 *   `/track event leaderboard <event>` - View the leaderboard for an event.
+
+### Admin Commands
+
+#### Track Management
+*   `/track create <track>` - Create a new track.
+*   `/track delete <track>` - Delete a track.
+*   `/track setstart <track>` - Set the start points (requires 2 points for a line).
+*   `/track setend <track>` - Set the end points (requires 2 points for a line).
+*   `/track settrigger <track> <type>` - Set trigger type (`pressure_plate` or `tripwire`).
+*   `/track setdelay <track> <seconds>` - Set a delay before the finish line is active.
+*   `/track setlaps <track> <laps>` - Set the number of laps for a track.
+*   `/track setleaderboard <track> <true|false>` - Enable or disable the leaderboard.
+*   `/track toggleleaderboard <track>` - Toggle the leaderboard status (enabled/disabled).
+*   `/track resetleaderboard <track>` - Clear the leaderboard for a track.
+*   `/track deleteplayer <track> <player>` - Remove a specific player from a track's leaderboard.
+
+#### Event Management
 *   `/track event create <event> <scoring>` - Create an event (`total_time` or `points`).
 *   `/track event delete <event>` - Delete an event.
 *   `/track event addtrack <event> <track>` - Add a track to an event.

@@ -25,6 +25,7 @@ public class Track {
     private TriggerType triggerType = TriggerType.PRESSURE_PLATE;
     private boolean leaderboardEnabled = true;
     private long triggerDelay = 0;
+    private int laps = 1;
 
     public Track() {}
 
@@ -174,6 +175,14 @@ public class Track {
 
     public void setTriggerDelay(long triggerDelay) {
         this.triggerDelay = triggerDelay;
+    }
+
+    public int getLaps() {
+        return laps;
+    }
+
+    public void setLaps(int laps) {
+        this.laps = laps;
     }
 
     public boolean isStartASet() {

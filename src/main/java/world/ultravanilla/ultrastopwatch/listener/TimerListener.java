@@ -160,6 +160,13 @@ public class TimerListener implements Listener {
                 return;
             }
 
+            // Check for laps
+            if (track.getLaps() > 1) {
+                if (!timerManager.lap(player, track.getLaps())) {
+                    return;
+                }
+            }
+
             timerManager.stop(player, true);
         }
     }
